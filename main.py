@@ -1,30 +1,30 @@
 import os
 import time
 import requests
-import json
 from flask import Flask
 from flask_socketio import SocketIO, emit
 from janome.tokenizer import Tokenizer
 from threading import Thread
+from collections import deque
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins='*')
 
-# 環境変数から Twitter API の Bearer Token を取得
+# Twitter API 認証用トークン
 BEARER_TOKEN = os.getenv("BEARER_TOKEN")
-if BEARER_TOKEN is None:
+if not BEARER_TOKEN:
     raise ValueError("BEARER_TOKEN is not set")
 
-# Twitter Recent Search API の URL とクエリパラメータ（例：日本語のみ取得）
+# Twitter REST API (Recent Search)
 SEARCH_URL = "https://api.twitter.com/2/tweets/search/recent"
-QUERY = "lang:ja"  # 日本語ツイート限定、他にキーワードなど追加可能
-MAX_RESULTS = 10  # 1リクエストで取得する件数（最大100件）
+QUERY = "lang:ja"
+MAX_RESULTS = 5  # メモリ軽量化のため、取得数を抑える
 
-# 形態素解析用
+# キーワード抽出用
 tokenizer = Tokenizer()
 
-# 既に取得済みのツイートIDを記録して、重複送信を防止するためのセット
-processed_tweet_ids = set()
+# 取得済みツイートID（上限1000件まで保存）
+processed_tweet_ids = deque(maxlen=1000)
 
 def get_recent_tweets():
     headers = {"Authorization": f"Bearer {BEARER_TOKEN}"}
@@ -34,15 +34,17 @@ def get_recent_tweets():
     }
     response = requests.get(SEARCH_URL, headers=headers, params=params)
     if response.status_code != 200:
-        print("Error fetching tweets: ", response.status_code, response.text)
+        print("Twitter API error:", response.status_code, response.text)
         return None
     return response.json()
 
 def extract_keywords(text):
     tokens = tokenizer.tokenize(text)
-    # 名詞と動詞のみ抽出し、適当なフィルタをかける（例として、長さ2以上のもの）
-    words = [token.surface for token in tokens if token.part_of_speech.split(',')[0] in ['名詞', '動詞'] and len(token.surface) > 1]
-    return words
+    return [
+        token.surface for token in tokens
+        if token.part_of_speech.split(',')[0] in ['名詞', '動詞']
+        and len(token.surface) > 1
+    ]
 
 def tweet_search_loop():
     while True:
@@ -52,28 +54,19 @@ def tweet_search_loop():
                 tweet_id = tweet["id"]
                 if tweet_id in processed_tweet_ids:
                     continue
-                processed_tweet_ids.add(tweet_id)
+                processed_tweet_ids.append(tweet_id)
                 text = tweet["text"]
                 keywords = extract_keywords(text)
-                # 各キーワードをWebSocket経由で送信（件数カウントは省略例）
                 for word in keywords:
-                    # ここでは単にキーワードを送る例です
                     socketio.emit('new-word', {'word': word})
-                    print(f"Emitted: {word}")
         else:
-            print("No data received from Twitter API.")
-        # 次のAPI呼び出しまで1分待つ（間隔は調整可能）
-        time.sleep(60)
+            print("No new tweets or API error.")
+        time.sleep(60)  # 1分ごとに実行
 
 @app.route('/')
 def index():
-    return "KYOMEI REST API Server is running."
+    return "KYOMEI JINJA REST API Server is running."
 
 if __name__ == '__main__':
-    # 別スレッドで定期的なツイート取得ループを開始
-    tweet_thread = Thread(target=tweet_search_loop)
-    tweet_thread.daemon = True
-    tweet_thread.start()
-
-    # Flaskサーバーを起動
+    Thread(target=tweet_search_loop, daemon=True).start()
     socketio.run(app, host='0.0.0.0', port=5000)
