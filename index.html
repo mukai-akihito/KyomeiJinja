@@ -1,15 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>KYOMEI JINJA 星空テスト</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: black;
+      overflow: hidden;
+      font-family: 'Arial', sans-serif;
+    }
+    .word {
+      position: absolute;
+      color: white;
+      font-size: 24px;
+      opacity: 0.8;
+      animation: floatUp 5s ease-out forwards;
+    }
+    @keyframes floatUp {
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-100px) scale(1.5);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script>
-  const socket = io("https://kyomeijinja.onrender.com"); // ← 修正ポイント
+  // 1. Socket.IOに接続
+  const socket = io("https://kyomeijinja.onrender.com");
 
   socket.on("connect", () => {
     console.log("接続しました！");
   });
 
+  // 2. 通信受信時に言葉を出す
   socket.on("new-word", (data) => {
-    const word = data.word;
+    const word = data.word || "？";
     spawnWord(word);
   });
+
+  // 3. テスト用：ページ読み込み時にも1語出す（サーバー通信が失敗しても見えるように）
+  window.onload = () => {
+    spawnWord("テスト星");
+  };
 
   function spawnWord(text) {
     const div = document.createElement("div");
@@ -27,3 +67,6 @@
     return colors[Math.floor(Math.random() * colors.length)];
   }
 </script>
+
+</body>
+</html>
