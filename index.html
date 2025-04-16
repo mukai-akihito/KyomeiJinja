@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>KYOMEI JINJA 星空デモ</title>
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      overflow: hidden;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+    .word {
+      position: absolute;
+      color: white;
+      font-size: 24px;
+      opacity: 0.8;
+      animation: floatUp 5s ease-out forwards;
+    }
+    @keyframes floatUp {
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-100px) scale(1.5);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+  const socket = io("wss://kyomeijinja.onrender.com", {
+    transports: ["websocket"]
+  });
+
+  socket.on("connect", () => {
+    console.log("接続しました！");
+  });
+
+  socket.on("new-word", (data) => {
+    const word = data.word;
+    spawnWord(word);
+  });
+
+  function spawnWord(text) {
+    const div = document.createElement("div");
+    div.className = "word";
+    div.innerText = text;
+    div.style.left = Math.random() * window.innerWidth + "px";
+    div.style.top = Math.random() * window.innerHeight + "px";
+    div.style.color = getRandomColor();
+    document.body.appendChild(div);
+
+    setTimeout(() => {
+      div.remove();
+    }, 5000);
+  }
+
+  function getRandomColor() {
+    const colors = ["#FFD700", "#87CEEB", "#FF69B4", "#ADFF2F", "#FF4500"];
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+</script>
+
+</body>
+</html>
