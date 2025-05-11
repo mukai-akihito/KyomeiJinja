@@ -4,3 +4,4 @@ Flask
 flask-socketio
 eventlet
 sudachipy
+sudachidict_core
