@@ -1,21 +1,21 @@
 import os
 import tweepy
-import MeCab
 from flask import Flask
 from flask_socketio import SocketIO
+from sudachipy import tokenizer
+from sudachipy import dictionary
 
 # Twitter API Token
 BEARER_TOKEN = os.getenv('BEARER_TOKEN')
-
-# Tweepy Client
 client = tweepy.Client(bearer_token=BEARER_TOKEN)
 
 # Flask + SocketIO setup
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-# MeCab setup
-tagger = MeCab.Tagger("-Ochasen")
+# SudachiPy setup
+tokenizer_obj = dictionary.Dictionary().create()
+mode = tokenizer.Tokenizer.SplitMode.C
 
 @app.route('/')
 def index():
@@ -28,9 +28,10 @@ def fetch_and_push_words():
         if response.data:
             for tweet in response.data:
                 text = tweet.text
-                for line in tagger.parse(text).splitlines():
-                    if "\t" in line and ("名詞" in line or "形容詞" in line):
-                        word = line.split("\t")[0]
+                tokens = tokenizer_obj.tokenize(text, mode)
+                for m in tokens:
+                    if m.part_of_speech()[0] in ['名詞', '形容詞']:
+                        word = m.surface()
                         socketio.emit("new_word", word)
         socketio.sleep(30)
 
