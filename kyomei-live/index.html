@@ -17,7 +17,8 @@ body { background: black; color: white; font-family: sans-serif; overflow: hidde
 </head>
 <body>
 <script>
-const socket = io("https://kyomeijinja.onrender.com"); // 後でRender URLに置き換える
+port = int(os.environ.get("PORT", 5000))
+socketio.run(app, host='0.0.0.0', port=port)
 socket.on("new_word", word => {
   const el = document.createElement('div');
   el.className = 'word';
