@@ -17,7 +17,7 @@ body { background: black; color: white; font-family: sans-serif; overflow: hidde
 </head>
 <body>
 <script>
-const socket = io("https://YOUR_RENDER_SERVER_URL"); // 後でRender URLに置き換える
+const socket = io("https://kyomeijinja.onrender.com"); // 後でRender URLに置き換える
 socket.on("new_word", word => {
   const el = document.createElement('div');
   el.className = 'word';
