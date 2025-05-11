@@ -14,3 +14,8 @@ def fetch_and_push_words():
         except Exception as e:
             print(f"Error fetching tweets: {e}")
         socketio.sleep(120)  # 2分間隔に変更
+        import eventlet
+eventlet.monkey_patch()
+
+port = int(os.environ.get("PORT", 5000))
+socketio.run(app, host="0.0.0.0", port=port)
