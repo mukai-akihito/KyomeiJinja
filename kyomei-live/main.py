@@ -1,3 +1,30 @@
+import os
+import tweepy
+from flask import Flask
+from flask_socketio import SocketIO
+from sudachipy import tokenizer
+from sudachipy import dictionary
+import eventlet
+
+# 必須：eventlet の monkey patch を最初に適用！
+eventlet.monkey_patch()
+
+# Twitter API Token
+BEARER_TOKEN = os.getenv('BEARER_TOKEN')
+client = tweepy.Client(bearer_token=BEARER_TOKEN)
+
+# Flask + SocketIO setup
+app = Flask(__name__)
+socketio = SocketIO(app, cors_allowed_origins="*")
+
+# SudachiPy setup
+tokenizer_obj = dictionary.Dictionary().create()
+mode = tokenizer.Tokenizer.SplitMode.C
+
+@app.route('/')
+def index():
+    return 'KYOMEI JINJA Server is running'
+
 def fetch_and_push_words():
     query = "祈り OR 共鳴 OR 平和 lang:ja -is:retweet"
     while True:
@@ -13,9 +40,8 @@ def fetch_and_push_words():
                             socketio.emit("new_word", word)
         except Exception as e:
             print(f"Error fetching tweets: {e}")
-        socketio.sleep(120)  # 2分間隔に変更
-        import eventlet
-eventlet.monkey_patch()
+        socketio.sleep(120)
 
-port = int(os.environ.get("PORT", 5000))
-socketio.run(app, host="0.0.0.0", port=port)
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5000))
+    socketio.run(app, host='0.0.0.0', port=port)
