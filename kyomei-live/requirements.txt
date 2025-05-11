@@ -1,0 +1,6 @@
+tweepy
+python-dotenv
+Flask
+flask-socketio
+eventlet
+mecab-python3
