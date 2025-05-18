@@ -8,22 +8,23 @@ from flask_socketio import SocketIO
 from sudachipy import tokenizer
 from sudachipy import dictionary
 
-# Twitter API設定
+# 環境変数からトークンを取得
 BEARER_TOKEN = os.getenv('BEARER_TOKEN')
 client = tweepy.Client(bearer_token=BEARER_TOKEN)
 
-# Flask + Socket.IO設定
+# Flask アプリと Socket.IO 初期化
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-# SudachiPy形態素解析設定
+# SudachiPy のトークナイザー準備
 tokenizer_obj = dictionary.Dictionary().create()
 mode = tokenizer.Tokenizer.SplitMode.C
 
 @app.route('/')
 def index():
-    return 'KYOMEI JINJA Server is running'
+    return 'KYOMEI JINJA - Minimal Server is running'
 
+# ツイートを取得して単語を送信
 def fetch_and_push_words():
     query = "祈り OR 共鳴 OR 平和 lang:ja -is:retweet"
     while True:
@@ -41,9 +42,9 @@ def fetch_and_push_words():
                             socketio.emit("new_word", word)
         except Exception as e:
             print(f"❌ エラー: {e}")
-        socketio.sleep(120)  # 2分間隔
+        socketio.sleep(120)  # 2分ごとに実行
 
-# 非同期で実行
+# クライアント接続時にバックグラウンドタスク開始
 @socketio.on('connect')
 def handle_connect():
     print("✅ クライアント接続")
