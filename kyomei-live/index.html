@@ -39,16 +39,6 @@
       setTimeout(() => el.remove(), 4000);
     });
 
-    // テスト用：定期的に仮の祈りを表示
-    setInterval(() => {
-      const el = document.createElement('div');
-      el.className = 'word';
-      el.innerText = "テスト祈り";
-      el.style.left = Math.random() * window.innerWidth + 'px';
-      el.style.top = (window.innerHeight - 50) + 'px';
-      document.body.appendChild(el);
-      setTimeout(() => el.remove(), 4000);
-    }, 2000);
   </script>
 </body>
 </html>
