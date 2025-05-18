@@ -1,33 +1,54 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<title>KYOMEI JINJA - 言葉の祈り</title>
-<style>
-body { background: black; color: white; font-family: sans-serif; overflow: hidden; }
-.word {
-  position: absolute; font-size: 24px; opacity: 0.8; animation: float 4s forwards;
-}
-@keyframes float {
-  0% { transform: translateY(0); opacity: 0.8; }
-  100% { transform: translateY(-200px); opacity: 0; }
-}
-</style>
-<script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
+  <meta charset="UTF-8">
+  <title>KYOMEI JINJA - 言葉の祈り</title>
+  <style>
+    body {
+      background: black;
+      color: white;
+      font-family: sans-serif;
+      overflow: hidden;
+      margin: 0;
+    }
+    .word {
+      position: absolute;
+      font-size: 24px;
+      opacity: 0.8;
+      animation: float 4s forwards;
+    }
+    @keyframes float {
+      0%   { transform: translateY(0); opacity: 0.8; }
+      100% { transform: translateY(-200px); opacity: 0; }
+    }
+  </style>
+  <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
 </head>
 <body>
-<script>
-port = int(os.environ.get("PORT", 5000))
-socketio.run(app, host='0.0.0.0', port=port)
-socket.on("new_word", word => {
-  const el = document.createElement('div');
-  el.className = 'word';
-  el.innerText = word;
-  el.style.left = Math.random() * window.innerWidth + 'px';
-  el.style.top = (window.innerHeight - 50) + 'px';
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), 4000);
-});
-</script>
+  <script>
+    const socket = io("https://kyomei-live.onrender.com");
+
+    // WebSocketから受け取った言葉を表示
+    socket.on("new_word", word => {
+      const el = document.createElement('div');
+      el.className = 'word';
+      el.innerText = word;
+      el.style.left = Math.random() * window.innerWidth + 'px';
+      el.style.top = (window.innerHeight - 50) + 'px';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    });
+
+    // テスト用：定期的に仮の祈りを表示
+    setInterval(() => {
+      const el = document.createElement('div');
+      el.className = 'word';
+      el.innerText = "テスト祈り";
+      el.style.left = Math.random() * window.innerWidth + 'px';
+      el.style.top = (window.innerHeight - 50) + 'px';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }, 2000);
+  </script>
 </body>
 </html>
