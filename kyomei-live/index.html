@@ -3,25 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <title>KYOMEI JINJA - 言葉の祈り</title>
-  <style>
-    body {
-      background: black;
-      color: white;
-      font-family: sans-serif;
-      overflow: hidden;
-      margin: 0;
-    }
-    .word {
-      position: absolute;
-      font-size: 24px;
-      opacity: 0.8;
-      animation: float 4s forwards;
-    }
-    @keyframes float {
-      0%   { transform: translateY(0); opacity: 0.8; }
-      100% { transform: translateY(-200px); opacity: 0; }
-    }
-  </style>
+<style>
+  body {
+    background: black url("ise-night.png") no-repeat center center fixed;
+    background-size: cover;
+    color: white;
+    font-family: sans-serif;
+    overflow: hidden;
+    margin: 0;
+  }
+  .word {
+    position: absolute;
+    font-size: 24px;
+    opacity: 0.8;
+    animation: float 4s forwards;
+  }
+  @keyframes float {
+    0%   { transform: translateY(0); opacity: 0.8; }
+    100% { transform: translateY(-200px); opacity: 0; }
+  }
+</style>
+
   <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
 </head>
 <body>
